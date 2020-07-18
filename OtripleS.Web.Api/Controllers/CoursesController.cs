@@ -4,6 +4,7 @@
 // ---------------------------------------------------------------
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using OtripleS.Web.Api.Models.Courses;
@@ -22,6 +23,26 @@ namespace OtripleS.Web.Api.Controllers
 		public CoursesController(ICourseService courseService) =>
 			this.courseService = courseService;
 
+        [HttpGet]
+        public ActionResult<IQueryable<Course>> GetAllCourses()
+        {
+            try
+            {
+                IQueryable<Course> storageCourseCourses =
+                    this.courseService.RetrieveAllCourses();
+
+                return Ok(storageCourseCourses);
+            }
+            catch (CourseDependencyException courseDependencyException)
+            {
+                return Problem(courseDependencyException.Message);
+            }
+            catch (CourseServiceException courseServiceException)
+            {
+                return Problem(courseServiceException.Message);
+            }
+        }
+        
         [HttpDelete("{courseId}")]
         public async ValueTask<ActionResult<Course>> DeleteCourseAsync(Guid courseId)
         {
@@ -64,5 +85,7 @@ namespace OtripleS.Web.Api.Controllers
 
         private static string GetInnerMessage(Exception exception) =>
             exception.InnerException.Message;
+        
+        
     }
 }
